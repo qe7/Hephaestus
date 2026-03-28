@@ -4,20 +4,28 @@
 
 package net.minecraft.src;
 
-import java.io.*;
-import java.net.*;
-import java.util.*;
+import com.github.qe7.hephaestus.Hephaestus;
+import com.github.qe7.hephaestus.events.PacketEvent;
+import com.github.qe7.hephaestus.services.managers.EventManager;
+
+import java.io.BufferedOutputStream;
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
+import java.io.IOException;
+import java.net.Socket;
+import java.net.SocketAddress;
+import java.net.SocketException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 // Referenced classes of package net.minecraft.src:
 //            NetworkReaderThread, NetworkWriterThread, Packet, NetHandler, 
 //            NetworkMasterThread, ThreadCloseConnection
 
-public class NetworkManager
-{
+public class NetworkManager {
 
-    public NetworkManager(Socket socket, String s, NetHandler nethandler)
-        throws IOException
-    {
+    public NetworkManager(Socket socket, String s, NetHandler nethandler) throws IOException {
         sendQueueLock = new Object();
         isRunning = true;
         readPackets = Collections.synchronizedList(new ArrayList());
@@ -33,13 +41,10 @@ public class NetworkManager
         networkSocket = socket;
         remoteSocketAddress = socket.getRemoteSocketAddress();
         netHandler = nethandler;
-        try
-        {
+        try {
             socket.setSoTimeout(30000);
             socket.setTrafficClass(24);
-        }
-        catch(SocketException socketexception)
-        {
+        } catch (SocketException socketexception) {
             System.err.println(socketexception.getMessage());
         }
         socketInputStream = new DataInputStream(socket.getInputStream());
@@ -50,48 +55,42 @@ public class NetworkManager
         writeThread.start();
     }
 
-    public void addToSendQueue(Packet packet)
-    {
-        if(isServerTerminating)
-        {
+    public void addToSendQueue(Packet packet) {
+        final PacketEvent event = new PacketEvent(packet, PacketEvent.Type.OUTGOING);
+        Hephaestus.getInstance().getServices().get(EventManager.class).publishEvent(event);
+
+        if (event.isCancelled()) return;
+
+        if (isServerTerminating) {
             return;
         }
-        synchronized(sendQueueLock)
-        {
+        synchronized (sendQueueLock) {
             sendQueueByteLength += packet.getPacketSize() + 1;
-            if(packet.isChunkDataPacket)
-            {
+            if (packet.isChunkDataPacket) {
                 chunkDataPackets.add(packet);
-            } else
-            {
+            } else {
                 dataPackets.add(packet);
             }
         }
     }
 
-    private boolean sendPacket()
-    {
+    private boolean sendPacket() {
         boolean flag = false;
-        try
-        {
-            if(!dataPackets.isEmpty() && (chunkDataSendCounter == 0 || System.currentTimeMillis() - ((Packet)dataPackets.get(0)).creationTimeMillis >= (long)chunkDataSendCounter))
-            {
+        try {
+            if (!dataPackets.isEmpty() && (chunkDataSendCounter == 0 || System.currentTimeMillis() - ((Packet) dataPackets.get(0)).creationTimeMillis >= (long) chunkDataSendCounter)) {
                 Packet packet;
-                synchronized(sendQueueLock)
-                {
-                    packet = (Packet)dataPackets.remove(0);
+                synchronized (sendQueueLock) {
+                    packet = (Packet) dataPackets.remove(0);
                     sendQueueByteLength -= packet.getPacketSize() + 1;
                 }
                 Packet.writePacket(packet, socketOutputStream);
                 field_28144_e[packet.getPacketId()] += packet.getPacketSize() + 1;
                 flag = true;
             }
-            if(field_20100_w-- <= 0 && !chunkDataPackets.isEmpty() && (chunkDataSendCounter == 0 || System.currentTimeMillis() - ((Packet)chunkDataPackets.get(0)).creationTimeMillis >= (long)chunkDataSendCounter))
-            {
+            if (field_20100_w-- <= 0 && !chunkDataPackets.isEmpty() && (chunkDataSendCounter == 0 || System.currentTimeMillis() - ((Packet) chunkDataPackets.get(0)).creationTimeMillis >= (long) chunkDataSendCounter)) {
                 Packet packet1;
-                synchronized(sendQueueLock)
-                {
-                    packet1 = (Packet)chunkDataPackets.remove(0);
+                synchronized (sendQueueLock) {
+                    packet1 = (Packet) chunkDataPackets.remove(0);
                     sendQueueByteLength -= packet1.getPacketSize() + 1;
                 }
                 Packet.writePacket(packet1, socketOutputStream);
@@ -99,11 +98,8 @@ public class NetworkManager
                 field_20100_w = 0;
                 flag = true;
             }
-        }
-        catch(Exception exception)
-        {
-            if(!isTerminating)
-            {
+        } catch (Exception exception) {
+            if (!isTerminating) {
                 onNetworkError(exception);
             }
             return false;
@@ -111,32 +107,29 @@ public class NetworkManager
         return flag;
     }
 
-    public void wakeThreads()
-    {
+    public void wakeThreads() {
         readThread.interrupt();
         writeThread.interrupt();
     }
 
-    private boolean readPacket()
-    {
+    private boolean readPacket() {
         boolean flag = false;
-        try
-        {
+        try {
             Packet packet = Packet.readPacket(socketInputStream, netHandler.isServerHandler());
-            if(packet != null)
-            {
+            if (packet != null) {
+                final PacketEvent event = new PacketEvent(packet, PacketEvent.Type.INCOMING);
+                Hephaestus.getInstance().getServices().get(EventManager.class).publishEvent(event);
+
+                if (event.isCancelled()) return false;
+
                 field_28145_d[packet.getPacketId()] += packet.getPacketSize() + 1;
                 readPackets.add(packet);
                 flag = true;
-            } else
-            {
+            } else {
                 networkShutdown("disconnect.endOfStream", new Object[0]);
             }
-        }
-        catch(Exception exception)
-        {
-            if(!isTerminating)
-            {
+        } catch (Exception exception) {
+            if (!isTerminating) {
                 onNetworkError(exception);
             }
             return false;
@@ -144,18 +137,13 @@ public class NetworkManager
         return flag;
     }
 
-    private void onNetworkError(Exception exception)
-    {
+    private void onNetworkError(Exception exception) {
         exception.printStackTrace();
-        networkShutdown("disconnect.genericReason", new Object[] {
-            (new StringBuilder()).append("Internal exception: ").append(exception.toString()).toString()
-        });
+        networkShutdown("disconnect.genericReason", new Object[]{(new StringBuilder()).append("Internal exception: ").append(exception.toString()).toString()});
     }
 
-    public void networkShutdown(String s, Object aobj[])
-    {
-        if(!isRunning)
-        {
+    public void networkShutdown(String s, Object aobj[]) {
+        if (!isRunning) {
             return;
         }
         isTerminating = true;
@@ -163,105 +151,85 @@ public class NetworkManager
         field_20101_t = aobj;
         (new NetworkMasterThread(this)).start();
         isRunning = false;
-        try
-        {
+        try {
             socketInputStream.close();
             socketInputStream = null;
+        } catch (Throwable throwable) {
         }
-        catch(Throwable throwable) { }
-        try
-        {
+        try {
             socketOutputStream.close();
             socketOutputStream = null;
+        } catch (Throwable throwable1) {
         }
-        catch(Throwable throwable1) { }
-        try
-        {
+        try {
             networkSocket.close();
             networkSocket = null;
+        } catch (Throwable throwable2) {
         }
-        catch(Throwable throwable2) { }
     }
 
-    public void processReadPackets()
-    {
-        if(sendQueueByteLength > 0x100000)
-        {
+    public void processReadPackets() {
+        if (sendQueueByteLength > 0x100000) {
             networkShutdown("disconnect.overflow", new Object[0]);
         }
-        if(readPackets.isEmpty())
-        {
-            if(timeSinceLastRead++ == 1200)
-            {
+        if (readPackets.isEmpty()) {
+            if (timeSinceLastRead++ == 1200) {
                 networkShutdown("disconnect.timeout", new Object[0]);
             }
-        } else
-        {
+        } else {
             timeSinceLastRead = 0;
         }
         Packet packet;
-        for(int i = 100; !readPackets.isEmpty() && i-- >= 0; packet.processPacket(netHandler))
-        {
-            packet = (Packet)readPackets.remove(0);
+        for (int i = 100; !readPackets.isEmpty() && i-- >= 0; packet.processPacket(netHandler)) {
+            packet = (Packet) readPackets.remove(0);
         }
 
         wakeThreads();
-        if(isTerminating && readPackets.isEmpty())
-        {
+        if (isTerminating && readPackets.isEmpty()) {
             netHandler.handleErrorMessage(terminationReason, field_20101_t);
         }
     }
 
-    public void func_28142_c()
-    {
+    public void func_28142_c() {
         wakeThreads();
         isServerTerminating = true;
         readThread.interrupt();
         (new ThreadCloseConnection(this)).start();
     }
 
-    static boolean isRunning(NetworkManager networkmanager)
-    {
+    static boolean isRunning(NetworkManager networkmanager) {
         return networkmanager.isRunning;
     }
 
-    static boolean isServerTerminating(NetworkManager networkmanager)
-    {
+    static boolean isServerTerminating(NetworkManager networkmanager) {
         return networkmanager.isServerTerminating;
     }
 
-    static boolean readNetworkPacket(NetworkManager networkmanager)
-    {
+    static boolean readNetworkPacket(NetworkManager networkmanager) {
         return networkmanager.readPacket();
     }
 
-    static boolean sendNetworkPacket(NetworkManager networkmanager)
-    {
+    static boolean sendNetworkPacket(NetworkManager networkmanager) {
         return networkmanager.sendPacket();
     }
 
-    static DataOutputStream func_28140_f(NetworkManager networkmanager)
-    {
+    static DataOutputStream func_28140_f(NetworkManager networkmanager) {
         return networkmanager.socketOutputStream;
     }
 
-    static boolean func_28138_e(NetworkManager networkmanager)
-    {
+    static boolean func_28138_e(NetworkManager networkmanager) {
         return networkmanager.isTerminating;
     }
 
-    static void func_30005_a(NetworkManager networkmanager, Exception exception)
-    {
+    static void func_30005_a(NetworkManager networkmanager, Exception exception) {
         networkmanager.onNetworkError(exception);
     }
 
-    static Thread getReadThread(NetworkManager networkmanager)
-    {
+    static Thread getReadThread(NetworkManager networkmanager) {
         return networkmanager.readThread;
     }
 
-    static Thread getWriteThread(NetworkManager networkmanager)
-    {
+    static Thread getWriteThread(NetworkManager networkmanager) {
         return networkmanager.writeThread;
     }
 

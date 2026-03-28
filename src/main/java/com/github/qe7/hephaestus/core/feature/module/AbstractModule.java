@@ -5,13 +5,13 @@ import com.github.qe7.hephaestus.core.feature.command.AbstractCommand;
 import com.github.qe7.hephaestus.core.feature.setting.AbstractSetting;
 import com.github.qe7.hephaestus.features.settings.BooleanSetting;
 import com.github.qe7.hephaestus.features.settings.KeybindSetting;
+import com.google.gson.JsonObject;
 import lombok.Getter;
 import lombok.Setter;
 import org.lwjgl.input.Keyboard;
 
 import java.util.Collections;
 import java.util.List;
-import java.util.Optional;
 
 /**
  * Represents a module/feature in the client.
@@ -87,6 +87,55 @@ public abstract class AbstractModule extends AbstractCommand implements EventHan
     @Override
     public boolean listening() {
         return this.isEnabled();
+    }
+
+    /**
+     * Serializes the module's state to a JSON object. This should include the module's enabled state and the values of its settings (if any).
+     *
+     * @return A JSON object representing the module's state, which can be saved to a file.
+     */
+    @Override
+    public JsonObject serialize() {
+        final JsonObject module = new JsonObject();
+
+        module.addProperty("enabled", this.isEnabled());
+
+        if (this.getSettings().view().isEmpty()) {
+            return module;
+        }
+
+        final JsonObject settings = new JsonObject();
+
+        for (AbstractSetting<?> setting : this.getSettings().view()) {
+            settings.add(setting.getName(), setting.serialize());
+        }
+
+        module.add("settings", settings);
+        return module;
+    }
+
+    /**
+     * Deserializes the module's state from the given JSON object. This should be the inverse of the serialize() method.
+     * The JSON object will contain the module's enabled state and the values of its settings (if any).
+     * Override this method to add custom deserialization logic for the module's settings.
+     *
+     * @param object The JSON object containing the module's state, as produced by the serialize() method.
+     */
+    @Override
+    public void deserialize(JsonObject object) {
+        if (object.has("enabled")) {
+            this.setEnabled(object.get("enabled").getAsBoolean());
+        }
+
+        if (object.has("settings")) {
+            final JsonObject settings = object.getAsJsonObject("settings");
+
+            for (AbstractSetting<?> setting : this.getSettings().view()) {
+                if (settings.has(setting.getName())) {
+                    setting.deserialize(settings.getAsJsonObject(setting.getName()));
+                }
+            }
+        }
     }
 
     /**

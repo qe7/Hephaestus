@@ -9,8 +9,12 @@ import com.github.qe7.hephaestus.core.feature.module.AbstractModule;
 import com.github.qe7.hephaestus.core.feature.module.ModuleCategory;
 import com.github.qe7.hephaestus.events.KeyPressEvent;
 import com.github.qe7.hephaestus.features.modules.client.HudModule;
+import com.github.qe7.hephaestus.features.modules.combat.AntiKnockbackModule;
 import com.github.qe7.hephaestus.features.settings.KeybindSetting;
+import com.github.qe7.hephaestus.utils.FileUtil;
+import com.google.gson.JsonObject;
 
+import java.io.File;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -20,6 +24,8 @@ import java.util.List;
  */
 public final class ModuleManager implements Service, EventHandler {
     private final HashMap<Class<? extends AbstractModule>, AbstractModule> modules = new HashMap<>();
+
+    private final String defaultConfigLocation = "default";
 
     /**
      * Loads the module manager, which will load all modules and their states and settings states from a default config.
@@ -31,6 +37,7 @@ public final class ModuleManager implements Service, EventHandler {
         List<AbstractModule> modules = new LinkedList<>();
 
         modules.add(new HudModule());
+        modules.add(new AntiKnockbackModule());
 
         modules.forEach(module -> {
             this.modules.put(module.getClass(), module);
@@ -38,6 +45,22 @@ public final class ModuleManager implements Service, EventHandler {
         });
 
         System.out.println("Loaded " + this.modules.size() + " modules. (expected " + modules.size() + ")");
+
+        System.out.println("Loading default module config...");
+
+        String configString = FileUtil.readFile(defaultConfigLocation);
+        if (configString == null) {
+            System.out.println("No default module config found, skipping...");
+        } else {
+            final JsonObject config = FileUtil.GSON.fromJson(configString, JsonObject.class);
+
+            for (AbstractModule module : this.modules.values()) {
+                if (config.has(module.getName())) {
+                    module.deserialize(config.getAsJsonObject(module.getName()));
+                }
+            }
+            System.out.println("Default module config loaded.");
+        }
 
         Hephaestus.getInstance().getServices().get(EventManager.class).registerHandler(this);
         System.out.println("Module manager loaded.");
@@ -50,8 +73,19 @@ public final class ModuleManager implements Service, EventHandler {
     public void unload() {
         System.out.println("Unloading module manager...");
 
-        // @qe7
-        // TODO: Save module states and settings states to a default config here.
+        System.out.println("Saving default module config...");
+        final JsonObject config = new JsonObject();
+
+        for (AbstractModule module : this.modules.values()) {
+            config.add(module.getName(), module.serialize());
+        }
+
+        FileUtil.writeFile(defaultConfigLocation, config.toString());
+        if (FileUtil.readFile(defaultConfigLocation) == null) {
+            System.err.println("Failed to save default module config.");
+        } else {
+            System.out.println("Default module config saved.");
+        }
 
         System.out.println("Module manager unloaded.");
     }

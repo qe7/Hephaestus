@@ -15,7 +15,7 @@ import java.awt.*;
 public final class HudModule extends AbstractModule {
 
     public HudModule() {
-        super("HUD", "Displays information on the ui.", ModuleCategory.CLIENT);
+        super("HUD", "Displays information on the ui", ModuleCategory.CLIENT);
 
         this.setEnabled(true); // Set enabled by default - @qe7
         this.getVisible().setValue(false); // Not visible by default, it's always seen so why have it in the list? - @qe7
@@ -50,7 +50,7 @@ public final class HudModule extends AbstractModule {
             fontRenderer.drawStringWithShadow(moduleName,
                     scaledResolution.getScaledWidth() - fontRenderer.getStringWidth(moduleName) - 2,
                     offset,
-                    Color.WHITE.getRGB());
+                    module.getCategory().getColor());
             offset += 10;
         }
     };

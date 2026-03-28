@@ -8,6 +8,5 @@ import net.minecraft.src.ScaledResolution;
 @AllArgsConstructor
 @Getter
 public final class Render2DEvent implements Event {
-
     private final ScaledResolution scaledResolution;
 }
