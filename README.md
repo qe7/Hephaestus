@@ -8,7 +8,7 @@ A hacked client designed for use on 2beta2t, providing various utilities and fea
 Check out the [assets repository](https://github.com/qe7/Hephaestus-Assets) for the assets used in this client.
 
 > [!NOTE] 
-> This is a recode of the original Hephaestus client, which was developed in 2023. The 1.0.0 version is no longer maintained, and this new version is built from scratch to provide a more stable and feature-rich experience.
+> This is a recode of the original Hephaestus client, which was developed in 2024. The 1.0.0 version is no longer maintained, and this new version is built from scratch to provide a more stable and feature-rich experience.
 
 ## Disclaimer
 
