@@ -26,7 +26,7 @@ public abstract class AbstractModule extends AbstractCommand implements EventHan
 
     private final ModuleCategory category;
 
-    private String suffix = "";
+    private String suffix = null;
 
     private boolean enabled = false;
 
