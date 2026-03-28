@@ -5,6 +5,8 @@
 package net.minecraft.client;
 
 import com.github.qe7.hephaestus.Hephaestus;
+import com.github.qe7.hephaestus.events.KeyPressEvent;
+import com.github.qe7.hephaestus.services.managers.EventManager;
 import net.minecraft.src.*;
 import org.lwjgl.LWJGLException;
 import org.lwjgl.input.Controllers;
@@ -22,6 +24,10 @@ import java.io.File;
 //            MinecraftApplet
 
 public abstract class Minecraft implements Runnable {
+
+    public static Minecraft getMinecraft() {
+        return theMinecraft;
+    }
 
     public Minecraft(Component component, Canvas canvas, int i, int j, boolean flag) {
         fullscreen = false;
@@ -164,7 +170,7 @@ public abstract class Minecraft implements Runnable {
         checkGLError("Post startup");
         ingameGUI = new GuiIngame(this);
 
-        new Hephaestus()
+        new Hephaestus();
 
         if (serverName != null) {
             displayGuiScreen(new GuiConnecting(this, serverName, serverPort));
@@ -870,6 +876,8 @@ public abstract class Minecraft implements Runnable {
                         if (currentScreen != null) {
                             currentScreen.handleKeyboardInput();
                         } else {
+                            Hephaestus.getInstance().getServices().get(EventManager.class).publishEvent(new KeyPressEvent(Keyboard.getEventKey()));
+
                             if (Keyboard.getEventKey() == 1) {
                                 displayInGameMenu();
                             }
