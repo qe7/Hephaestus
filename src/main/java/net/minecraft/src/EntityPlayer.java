@@ -1,25 +1,44 @@
-// Decompiled by Jad v1.5.8g. Copyright 2001 Pavel Kouznetsov.
-// Jad home page: http://www.kpdus.com/jad.html
-// Decompiler options: packimports(3) braces deadcode 
-
 package net.minecraft.src;
 
-import java.util.Iterator;
+import lombok.Getter;
+
 import java.util.List;
 
-// Referenced classes of package net.minecraft.src:
-//            EntityLiving, InventoryPlayer, ContainerPlayer, World, 
-//            ChunkCoordinates, DataWatcher, Container, StatList, 
-//            MathHelper, AxisAlignedBB, Entity, ItemStack, 
-//            Item, EntityItem, Material, NBTTagCompound, 
-//            NBTTagList, EntityMob, EntityArrow, EntityCreeper, 
-//            EntityGhast, EntityWolf, EnumStatus, WorldProvider, 
-//            BlockBed, Block, IChunkProvider, EntityMinecart, 
-//            AchievementList, EntityBoat, EntityPig, EntityFish, 
-//            IInventory, TileEntityFurnace, TileEntityDispenser, TileEntitySign, 
-//            StatBase
-
 public abstract class EntityPlayer extends EntityLiving {
+    public InventoryPlayer inventory;
+    public Container inventorySlots;
+    public Container craftingInventory;
+    public byte field_9371_f;
+    @Getter
+    public int score;
+    public float field_775_e;
+    public float field_774_f;
+    public boolean isSwinging;
+    public int swingProgressInt;
+    public String username;
+    public int dimension;
+    public String playerCloakUrl;
+    public double field_20066_r;
+    public double field_20065_s;
+    public double field_20064_t;
+    public double field_20063_u;
+    public double field_20062_v;
+    public double field_20061_w;
+    protected boolean sleeping;
+    public ChunkCoordinates bedChunkCoordinates;
+    private int sleepTimer;
+    public float field_22063_x;
+    public float field_22062_y;
+    public float field_22061_z;
+    @Getter
+    private ChunkCoordinates playerSpawnCoordinate;
+    private ChunkCoordinates startMinecartRidingCoordinate;
+    public int timeUntilPortal;
+    protected boolean inPortal;
+    public float timeInPortal;
+    public float prevTimeInPortal;
+    private int damageRemainder;
+    public EntityFish fishEntity;
 
     public EntityPlayer(World world) {
         super(world);
@@ -46,7 +65,7 @@ public abstract class EntityPlayer extends EntityLiving {
 
     protected void entityInit() {
         super.entityInit();
-        dataWatcher.addObject(16, Byte.valueOf((byte) 0));
+        dataWatcher.addObject(16, (byte) 0);
     }
 
     public void onUpdate() {
@@ -116,7 +135,7 @@ public abstract class EntityPlayer extends EntityLiving {
     }
 
     public void updateCloak() {
-        playerCloakUrl = (new StringBuilder()).append("http://s3.amazonaws.com/MinecraftCloaks/").append(username).append(".png").toString();
+        playerCloakUrl = "http://s3.amazonaws.com/MinecraftCloaks/" + username + ".png";
         cloakUrl = playerCloakUrl;
     }
 
@@ -172,10 +191,9 @@ public abstract class EntityPlayer extends EntityLiving {
         field_774_f += (f - field_774_f) * 0.4F;
         field_9328_R += (f1 - field_9328_R) * 0.8F;
         if (health > 0) {
-            List list = worldObj.getEntitiesWithinAABBExcludingEntity(this, boundingBox.expand(1.0D, 0.0D, 1.0D));
+            List<Entity> list = worldObj.getEntitiesWithinAABBExcludingEntity(this, boundingBox.expand(1.0D, 0.0D, 1.0D));
             if (list != null) {
-                for (int i = 0; i < list.size(); i++) {
-                    Entity entity = (Entity) list.get(i);
+                for (Entity entity : list) {
                     if (!entity.isDead) {
                         collideWithPlayer(entity);
                     }
@@ -187,10 +205,6 @@ public abstract class EntityPlayer extends EntityLiving {
 
     private void collideWithPlayer(Entity entity) {
         entity.onCollideWithPlayer(this);
-    }
-
-    public int getScore() {
-        return score;
     }
 
     public void onDeath(Entity entity) {
@@ -373,19 +387,14 @@ public abstract class EntityPlayer extends EntityLiving {
         if ((entityliving instanceof EntityPlayer) && !func_27025_G()) {
             return;
         }
-        List list = worldObj.getEntitiesWithinAABB(net.minecraft.src.EntityWolf.class, AxisAlignedBB.getBoundingBoxFromPool(posX, posY, posZ, posX + 1.0D, posY + 1.0D, posZ + 1.0D).expand(16D, 4D, 16D));
-        Iterator iterator = list.iterator();
-        do {
-            if (!iterator.hasNext()) {
-                break;
+        List<Entity> list = worldObj.getEntitiesWithinAABB(net.minecraft.src.EntityWolf.class, AxisAlignedBB.getBoundingBoxFromPool(posX, posY, posZ, posX + 1.0D, posY + 1.0D, posZ + 1.0D).expand(16D, 4D, 16D));
+        for (Entity entity : list) {
+            EntityWolf entityWolf = (EntityWolf) entity;
+            if (entityWolf.isWolfTamed() && entityWolf.getTarget() == null && username.equals(entityWolf.getWolfOwner()) && (!flag || !entityWolf.isWolfSitting())) {
+                entityWolf.setWolfSitting(false);
+                entityWolf.setTarget(entityliving);
             }
-            Entity entity = (Entity) iterator.next();
-            EntityWolf entitywolf1 = (EntityWolf) entity;
-            if (entitywolf1.isWolfTamed() && entitywolf1.getTarget() == null && username.equals(entitywolf1.getWolfOwner()) && (!flag || !entitywolf1.isWolfSitting())) {
-                entitywolf1.setWolfSitting(false);
-                entitywolf1.setTarget(entityliving);
-            }
-        } while (true);
+        }
     }
 
     protected void damageEntity(int i) {
@@ -597,8 +606,7 @@ public abstract class EntityPlayer extends EntityLiving {
         if (world.getBlockId(chunkcoordinates.x, chunkcoordinates.y, chunkcoordinates.z) != Block.blockBed.blockID) {
             return null;
         } else {
-            ChunkCoordinates chunkcoordinates1 = BlockBed.getNearestEmptyChunkCoordinates(world, chunkcoordinates.x, chunkcoordinates.y, chunkcoordinates.z, 0);
-            return chunkcoordinates1;
+            return BlockBed.getNearestEmptyChunkCoordinates(world, chunkcoordinates.x, chunkcoordinates.y, chunkcoordinates.z, 0);
         }
     }
 
@@ -636,10 +644,6 @@ public abstract class EntityPlayer extends EntityLiving {
     }
 
     public void addChatMessage(String s) {
-    }
-
-    public ChunkCoordinates getPlayerSpawnCoordinate() {
-        return playerSpawnCoordinate;
     }
 
     public void setPlayerSpawnCoordinate(ChunkCoordinates chunkcoordinates) {
@@ -745,43 +749,8 @@ public abstract class EntityPlayer extends EntityLiving {
     public void setInPortal() {
         if (timeUntilPortal > 0) {
             timeUntilPortal = 10;
-            return;
         } else {
             inPortal = true;
-            return;
         }
     }
-
-    public InventoryPlayer inventory;
-    public Container inventorySlots;
-    public Container craftingInventory;
-    public byte field_9371_f;
-    public int score;
-    public float field_775_e;
-    public float field_774_f;
-    public boolean isSwinging;
-    public int swingProgressInt;
-    public String username;
-    public int dimension;
-    public String playerCloakUrl;
-    public double field_20066_r;
-    public double field_20065_s;
-    public double field_20064_t;
-    public double field_20063_u;
-    public double field_20062_v;
-    public double field_20061_w;
-    protected boolean sleeping;
-    public ChunkCoordinates bedChunkCoordinates;
-    private int sleepTimer;
-    public float field_22063_x;
-    public float field_22062_y;
-    public float field_22061_z;
-    private ChunkCoordinates playerSpawnCoordinate;
-    private ChunkCoordinates startMinecartRidingCoordinate;
-    public int timeUntilPortal;
-    protected boolean inPortal;
-    public float timeInPortal;
-    public float prevTimeInPortal;
-    private int damageRemainder;
-    public EntityFish fishEntity;
 }

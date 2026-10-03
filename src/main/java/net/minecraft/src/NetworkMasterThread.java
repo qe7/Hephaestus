@@ -1,49 +1,31 @@
-// Decompiled by Jad v1.5.8g. Copyright 2001 Pavel Kouznetsov.
-// Jad home page: http://www.kpdus.com/jad.html
-// Decompiler options: packimports(3) braces deadcode 
-
 package net.minecraft.src;
 
+class NetworkMasterThread extends Thread {
+    private final NetworkManager networkManager;
 
-// Referenced classes of package net.minecraft.src:
-//            NetworkManager
-
-class NetworkMasterThread extends Thread
-{
-
-    NetworkMasterThread(NetworkManager networkmanager)
-    {
-//        super();
-        netManager = networkmanager;
+    NetworkMasterThread(NetworkManager networkManager) {
+        this.networkManager = networkManager;
     }
 
-    public void run()
-    {
-        try
-        {
+    @Override
+    public void run() {
+        try {
             Thread.sleep(5000L);
-            if(NetworkManager.getReadThread(netManager).isAlive())
-            {
-                try
-                {
-                    NetworkManager.getReadThread(netManager).stop();
-                }
-                catch(Throwable throwable) { }
-            }
-            if(NetworkManager.getWriteThread(netManager).isAlive())
-            {
-                try
-                {
-                    NetworkManager.getWriteThread(netManager).stop();
-                }
-                catch(Throwable throwable1) { }
-            }
-        }
-        catch(InterruptedException interruptedexception)
-        {
-            interruptedexception.printStackTrace();
+            shutdownThread(NetworkManager.getReadThread(networkManager));
+            shutdownThread(NetworkManager.getWriteThread(networkManager));
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
         }
     }
 
-    final NetworkManager netManager; /* synthetic field */
+    private void shutdownThread(Thread thread) {
+        if (thread != null && thread.isAlive()) {
+            thread.interrupt();
+            try {
+                thread.join(3000L);
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+            }
+        }
+    }
 }

@@ -47,7 +47,7 @@ public class ItemMap extends ItemMapBase
             mapdata.field_28179_c = world.getWorldInfo().getSpawnZ();
             mapdata.field_28177_e = 3;
             mapdata.field_28178_d = (byte)world.worldProvider.worldType;
-            mapdata.markDirty();
+            mapdata.setDirty(true);
             world.setItemData(s1, mapdata);
         }
         return mapdata;
@@ -262,6 +262,6 @@ public class ItemMap extends ItemMapBase
         mapdata.field_28179_c = MathHelper.floor_double(entityplayer.posZ);
         mapdata.field_28177_e = 3;
         mapdata.field_28178_d = (byte)world.worldProvider.worldType;
-        mapdata.markDirty();
+        mapdata.setDirty(true);
     }
 }

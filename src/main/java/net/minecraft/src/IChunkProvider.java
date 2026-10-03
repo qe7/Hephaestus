@@ -1,29 +1,19 @@
-// Decompiled by Jad v1.5.8g. Copyright 2001 Pavel Kouznetsov.
-// Jad home page: http://www.kpdus.com/jad.html
-// Decompiler options: packimports(3) braces deadcode 
-
 package net.minecraft.src;
 
+public interface IChunkProvider {
+    boolean chunkExists(int i, int j);
 
-// Referenced classes of package net.minecraft.src:
-//            Chunk, IProgressUpdate
+    Chunk provideChunk(int i, int j);
 
-public interface IChunkProvider
-{
+    Chunk prepareChunk(int i, int j);
 
-    public abstract boolean chunkExists(int i, int j);
+    void populate(IChunkProvider ichunkprovider, int i, int j);
 
-    public abstract Chunk provideChunk(int i, int j);
+    boolean saveChunks(boolean flag, IProgressUpdate iprogressupdate);
 
-    public abstract Chunk prepareChunk(int i, int j);
+    boolean unload100OldestChunks();
 
-    public abstract void populate(IChunkProvider ichunkprovider, int i, int j);
+    boolean canSave();
 
-    public abstract boolean saveChunks(boolean flag, IProgressUpdate iprogressupdate);
-
-    public abstract boolean unload100OldestChunks();
-
-    public abstract boolean canSave();
-
-    public abstract String makeString();
+    String makeString();
 }

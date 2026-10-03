@@ -4,7 +4,6 @@
 
 package net.minecraft.src;
 
-import java.io.PrintStream;
 import java.util.*;
 
 // Referenced classes of package net.minecraft.src:
@@ -1090,7 +1089,7 @@ public class World
         worldAccesses.remove(iworldaccess);
     }
 
-    public List getCollidingBoundingBoxes(Entity entity, AxisAlignedBB axisalignedbb)
+    public List<AxisAlignedBB> getCollidingBoundingBoxes(Entity entity, AxisAlignedBB axisalignedbb)
     {
         collidingBoundingBoxes.clear();
         int i = MathHelper.floor_double(axisalignedbb.minX);
@@ -1121,7 +1120,7 @@ public class World
         }
 
         double d = 0.25D;
-        List list = getEntitiesWithinAABBExcludingEntity(entity, axisalignedbb.expand(d, d, d));
+        List<Entity> list = getEntitiesWithinAABBExcludingEntity(entity, axisalignedbb.expand(d, d, d));
         for(int j2 = 0; j2 < list.size(); j2++)
         {
             AxisAlignedBB axisalignedbb1 = ((Entity)list.get(j2)).getBoundingBox();
@@ -2310,7 +2309,7 @@ public class World
 
     }
 
-    public List getEntitiesWithinAABBExcludingEntity(Entity entity, AxisAlignedBB axisalignedbb)
+    public List<Entity> getEntitiesWithinAABBExcludingEntity(Entity entity, AxisAlignedBB axisalignedbb)
     {
         field_1012_M.clear();
         int i = MathHelper.floor_double((axisalignedbb.minX - 2D) / 16D);
@@ -2332,7 +2331,7 @@ public class World
         return field_1012_M;
     }
 
-    public List getEntitiesWithinAABB(Class class1, AxisAlignedBB axisalignedbb)
+    public List<Entity> getEntitiesWithinAABB(Class class1, AxisAlignedBB axisalignedbb)
     {
         int i = MathHelper.floor_double((axisalignedbb.minX - 2D) / 16D);
         int j = MathHelper.floor_double((axisalignedbb.maxX + 2D) / 16D);
@@ -2925,7 +2924,7 @@ public class World
     public boolean findingSpawnPoint;
     private boolean allPlayersSleeping;
     public MapStorage field_28108_z;
-    private ArrayList collidingBoundingBoxes;
+    private ArrayList<AxisAlignedBB> collidingBoundingBoxes;
     private boolean field_31055_L;
     private int lightingUpdatesCounter;
     private boolean spawnHostileMobs;
@@ -2933,7 +2932,7 @@ public class World
     static int lightingUpdatesScheduled = 0;
     private Set positionsToUpdate;
     private int soundCounter;
-    private List field_1012_M;
+    private List<Entity> field_1012_M;
     public boolean multiplayerWorld;
 
 }

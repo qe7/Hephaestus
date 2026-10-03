@@ -4,10 +4,6 @@
 
 package net.minecraft.src;
 
-import com.github.qe7.hephaestus.Hephaestus;
-import com.github.qe7.hephaestus.events.PacketEvent;
-import com.github.qe7.hephaestus.services.managers.EventManager;
-
 import java.io.BufferedOutputStream;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
@@ -56,10 +52,10 @@ public class NetworkManager {
     }
 
     public void addToSendQueue(Packet packet) {
-        final PacketEvent event = new PacketEvent(packet, PacketEvent.Type.OUTGOING);
-        Hephaestus.getInstance().getServices().get(EventManager.class).publishEvent(event);
-
-        if (event.isCancelled()) return;
+//        final PacketEvent event = new PacketEvent(packet, PacketEvent.Type.OUTGOING);
+//        Hephaestus.getInstance().getServices().get(EventManager.class).publishEvent(event);
+//
+//        if (event.isCancelled()) return;
 
         if (isServerTerminating) {
             return;
@@ -117,10 +113,10 @@ public class NetworkManager {
         try {
             Packet packet = Packet.readPacket(socketInputStream, netHandler.isServerHandler());
             if (packet != null) {
-                final PacketEvent event = new PacketEvent(packet, PacketEvent.Type.INCOMING);
-                Hephaestus.getInstance().getServices().get(EventManager.class).publishEvent(event);
+                //final PacketEvent event = new PacketEvent(packet, PacketEvent.Type.INCOMING);
+                //Hephaestus.getInstance().getServices().get(EventManager.class).publishEvent(event);
 
-                if (event.isCancelled()) return false;
+                //if (event.isCancelled()) return false;
 
                 field_28145_d[packet.getPacketId()] += packet.getPacketSize() + 1;
                 readPackets.add(packet);

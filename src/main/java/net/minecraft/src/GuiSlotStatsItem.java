@@ -17,7 +17,7 @@ class GuiSlotStatsItem extends GuiSlotStats
     {
         super(guistats);
         field_27275_a = guistats;
-        field_27273_c = new ArrayList();
+        field_27273_c = new ArrayList<>();
         Iterator iterator = StatList.field_25186_c.iterator();
         do
         {

@@ -124,7 +124,7 @@ public class MapData extends MapDataBase
 
     public void func_28170_a(int i, int j, int k)
     {
-        super.markDirty();
+        super.setDirty(true);
         for(int l = 0; l < field_28174_h.size(); l++)
         {
             MapInfo mapinfo = (MapInfo)field_28174_h.get(l);
@@ -151,7 +151,7 @@ public class MapData extends MapDataBase
                 field_28176_f[(l + k) * 128 + i] = abyte0[l + 3];
             }
 
-            markDirty();
+            setDirty(true);
         } else
         if(abyte0[0] == 1)
         {

@@ -69,7 +69,7 @@ tasks.register('generateBuildConstants') {
     outputs.dir generatedBuildConstantsDir
     doLast {
         generatedBuildConstantsDir.mkdirs()
-        def packagePath = 'com.github.qe7.hephaestus'.replace('.', '/')
+        def packagePath = 'com.github.qe7.hephaestus.core'.replace('.', '/')
         def targetDir = new File(generatedBuildConstantsDir, packagePath)
         targetDir.mkdirs()
 
@@ -78,7 +78,7 @@ tasks.register('generateBuildConstants') {
         def gitRevision = getRevisionCount()
 
         def constantsFile = new File(targetDir, 'BuildConstants.java')
-        constantsFile.text = """package com.github.qe7.hephaestus;
+        constantsFile.text = """package com.github.qe7.hephaestus.core;
 
 public final class BuildConstants {
     public static final String GIT_COMMIT = \"${gitCommit}\";

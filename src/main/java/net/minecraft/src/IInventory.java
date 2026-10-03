@@ -1,29 +1,19 @@
-// Decompiled by Jad v1.5.8g. Copyright 2001 Pavel Kouznetsov.
-// Jad home page: http://www.kpdus.com/jad.html
-// Decompiler options: packimports(3) braces deadcode 
-
 package net.minecraft.src;
 
+public interface IInventory {
+    int getSizeInventory();
 
-// Referenced classes of package net.minecraft.src:
-//            ItemStack, EntityPlayer
+    ItemStack getStackInSlot(int i);
 
-public interface IInventory
-{
+    ItemStack decrStackSize(int i, int j);
 
-    public abstract int getSizeInventory();
+    void setInventorySlotContents(int i, ItemStack itemstack);
 
-    public abstract ItemStack getStackInSlot(int i);
+    String getInvName();
 
-    public abstract ItemStack decrStackSize(int i, int j);
+    int getInventoryStackLimit();
 
-    public abstract void setInventorySlotContents(int i, ItemStack itemstack);
+    void onInventoryChanged();
 
-    public abstract String getInvName();
-
-    public abstract int getInventoryStackLimit();
-
-    public abstract void onInventoryChanged();
-
-    public abstract boolean canInteractWith(EntityPlayer entityplayer);
+    boolean canInteractWith(EntityPlayer entityplayer);
 }

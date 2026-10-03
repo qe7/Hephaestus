@@ -4,11 +4,6 @@
 
 package net.minecraft.src;
 
-import java.util.Random;
-
-import com.github.qe7.hephaestus.Hephaestus;
-import com.github.qe7.hephaestus.events.UpdateEvent;
-import com.github.qe7.hephaestus.services.managers.EventManager;
 import net.minecraft.client.Minecraft;
 
 // Referenced classes of package net.minecraft.src:
@@ -53,8 +48,6 @@ public class EntityPlayerSP extends EntityPlayer
 
     public void onLivingUpdate()
     {
-        Hephaestus.getInstance().getServices().get(EventManager.class).publishEvent(new UpdateEvent());
-
         if(!mc.statFileWriter.hasAchievementUnlocked(AchievementList.openInventory))
         {
             mc.guiAchievement.queueAchievementInformation(AchievementList.openInventory);
@@ -247,7 +240,7 @@ public class EntityPlayerSP extends EntityPlayer
         return worldObj.isBlockNormalCube(i, j, k);
     }
 
-    protected boolean pushOutOfBlocks(double d, double d1, double d2)
+    protected void pushOutOfBlocks(double d, double d1, double d2)
     {
         int i = MathHelper.floor_double(d);
         int j = MathHelper.floor_double(d1);
@@ -300,7 +293,6 @@ public class EntityPlayerSP extends EntityPlayer
                 motionZ = f;
             }
         }
-        return false;
     }
 
     public MovementInput movementInput;

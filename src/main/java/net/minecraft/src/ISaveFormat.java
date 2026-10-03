@@ -1,32 +1,23 @@
-// Decompiled by Jad v1.5.8g. Copyright 2001 Pavel Kouznetsov.
-// Jad home page: http://www.kpdus.com/jad.html
-// Decompiler options: packimports(3) braces deadcode 
-
 package net.minecraft.src;
 
 import java.util.List;
 
-// Referenced classes of package net.minecraft.src:
-//            ISaveHandler, WorldInfo, IProgressUpdate
+public interface ISaveFormat {
+    String func_22178_a();
 
-public interface ISaveFormat
-{
+    ISaveHandler getSaveLoader(String s, boolean flag);
 
-    public abstract String func_22178_a();
+    List func_22176_b();
 
-    public abstract ISaveHandler getSaveLoader(String s, boolean flag);
+    void flushCache();
 
-    public abstract List func_22176_b();
+    WorldInfo func_22173_b(String s);
 
-    public abstract void flushCache();
+    void func_22172_c(String s);
 
-    public abstract WorldInfo func_22173_b(String s);
+    void func_22170_a(String s, String s1);
 
-    public abstract void func_22172_c(String s);
+    boolean isOldMapFormat(String s);
 
-    public abstract void func_22170_a(String s, String s1);
-
-    public abstract boolean isOldMapFormat(String s);
-
-    public abstract boolean convertMapFormat(String s, IProgressUpdate iprogressupdate);
+    boolean convertMapFormat(String s, IProgressUpdate iprogressupdate);
 }
